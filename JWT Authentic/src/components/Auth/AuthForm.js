@@ -1,4 +1,6 @@
 import { useState, useRef } from "react";
+import { useContext } from "react";
+import AuthContext from "../../store/auth-context";
 
 import classes from "./AuthForm.module.css";
 
@@ -6,6 +8,8 @@ const AuthForm = () => {
   const [isLogin, setIsLogin] = useState(true);
   const emailInputRef = useRef();
   const passwordInputRef = useRef();
+  const [isLoading, setIsLoading] = useState(false);
+  const AuthCtx = useContext(AuthContext);
 
   const switchAuthModeHandler = () => {
     setIsLogin((prevState) => !prevState);
@@ -18,24 +22,30 @@ const AuthForm = () => {
     const enteredPassword = passwordInputRef.current.value;
 
     //optional: add validation
-
+    let url;
+    setIsLoading(true);
     if (isLogin) {
+      url =
+        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyDkKL5dldk66yoQ-vveEdspAvV5UydSl5k";
     } else {
-      fetch(
-        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyDkKL5dldk66yoQ-vveEdspAvV5UydSl5k",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            email: enteredEmail,
-            password: enteredPassword,
-            returnSecureToken: true,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      ).then((res) => {
+      url =
+        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyDkKL5dldk66yoQ-vveEdspAvV5UydSl5k";
+    }
+
+    fetch(url, {
+      method: "POST",
+      body: JSON.stringify({
+        email: enteredEmail,
+        password: enteredPassword,
+        returnSecureToken: true,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => {
         if (res.ok) {
+          setIsLoading(false);
           return res.json();
         } else {
           return res.json().then((data) => {
@@ -44,8 +54,13 @@ const AuthForm = () => {
             throw new Error(errorMessage);
           });
         }
+      })
+      .then((data) => {
+        AuthCtx.login(data.idToken);
+      })
+      .catch((err) => {
+        alert(err.message);
       });
-    }
   };
 
   return (
@@ -66,7 +81,10 @@ const AuthForm = () => {
           />
         </div>
         <div className={classes.actions}>
-          <button>{isLogin ? "Login" : "Create Account"}</button>
+          {isLoading && <p>Signing you in...</p>}
+          {!isLoading && (
+            <button>{isLogin ? "Login" : "Create Account"}</button>
+          )}
           <button
             type="button"
             className={classes.toggle}
