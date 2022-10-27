@@ -6,3 +6,10 @@
 .profile h1 {
   font-size: 5rem;
 }
+
+.profile p {
+  text-align: center;
+  color: black;
+  font-size: 1.5rem;
+  font-wieght: border;
+}
