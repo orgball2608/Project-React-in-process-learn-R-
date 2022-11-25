@@ -15,6 +15,10 @@ const Header = () => {
           new
         </Link>
         <div>|</div>
+        <Link to="/top" className=" text-black">
+          top
+        </Link>
+        <div>|</div>
         <Link to="/search" className=" text-black">
           search
         </Link>
